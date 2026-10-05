@@ -3,8 +3,8 @@ const prompt = require('prompt-sync')();
 
 
 // let nombre = (prompt("Ingresa el nombre de un pokemon: ")).toLowerCase()
-let nombre1 = (prompt("Ingresa el nombre del primer pokemon: ")).toLowerCase()
-let nombre2 = (prompt("Ingresa el nombre del segundo pokemon: ")).toLowerCase()
+// let nombre1 = (prompt("Ingresa el nombre del primer pokemon: ")).toLowerCase()
+// let nombre2 = (prompt("Ingresa el nombre del segundo pokemon: ")).toLowerCase()
 let stat = (prompt("ingresa el stat de comparación: ")).toLowerCase()
 
 
@@ -19,12 +19,24 @@ async function buscarPokemon(nombre) {
         return datos
     }
 }
+let miLista = ["pikachu", "charizard", "charmander", "rowlet", "melmetal", "rockruff"]
 
 // esto es porque no se puede usar await en el nivel superior de un archivo, solo dentro de funciones async, por lo del common js ya que no esta como ES module, por eso se hace una funcion async y se llama a esa funcion
 async function respuesta() {
+    // para el 1
     // console.log(await mostrarFicha(await buscarPokemon(nombre)))
-    console.log(await compararPokemon(await buscarPokemon(nombre1), await buscarPokemon(nombre2), stat));
-    
+    // para el 4
+    // console.log(await compararPokemon(await buscarPokemon(nombre1), await buscarPokemon(nombre2), stat));
+    // para el 5
+    console.log(await pokemonMasFuerte(miLista, stat))
+
+    let winAttack = await pokemonMasFuerte(miLista, "attack");
+
+    console.log("Ganador en ATTACK:", winAttack);
+
+    // Mostrar ficha del ganador en attack
+    let pokeAttack = await buscarPokemon(winAttack);
+    await mostrarFicha(pokeAttack);
 }
 respuesta()
 
@@ -75,13 +87,15 @@ async function obtenerStat(datos, nombreStat) {
 }
 
 async function compararPokemon(nombre1, nombre2, stat) {
-    if (stat == null) {
-        console.log("stats validas: hp , attack , defense , special-attack , special-defense , speed")
-        return
+    if (!nombre1 || !nombre2) {
+        return("Error el algun nombre ingresado");
+    }
+    if (stat === null) {
+        return("stats validas: hp , attack , defense , special-attack , special-defense , speed")
     } else {
         let statUno = await obtenerStat(nombre1, stat);
         let statDos = await obtenerStat(nombre2, stat);
-
+        
         if (statUno > statDos) {
             return(nombre1.name + " gana en " + stat)
         } else if(statDos > statUno) {
@@ -90,4 +104,27 @@ async function compararPokemon(nombre1, nombre2, stat) {
             return("Empate en "+ stat);
         }
     }
+}
+
+
+async function pokemonMasFuerte(listaNombres, stat) {
+    let nombred = ""
+    let valord = -1
+
+    
+    for (let i of listaNombres) {
+        let info = await buscarPokemon(i)
+        let dato = await obtenerStat(info, stat)
+        if (i == null) {
+            continue
+        } else if (dato == null) {
+            return("stats validas: hp , attack , defense , special-attack , special-defense , speed")
+        } else {
+            if (dato > valord) {
+                valord = dato
+                nombred = i
+            }
+        }
+    }
+    return "El ganador es "+nombred+" con "+valord+" en "+stat
 }
